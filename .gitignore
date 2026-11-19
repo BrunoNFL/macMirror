@@ -1,0 +1,12 @@
+work/
+_donor/
+src/lifted/
+build/
+setup_mirrors_edge_*
+*.exe
+*.bin
+*.log
+__pycache__/
+*.pyc
+.DS_Store
+.vscode/

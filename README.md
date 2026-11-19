@@ -18,8 +18,6 @@ A pure native `arm64` macOS static recompilation port of **Mirror's Edge (2008, 
 curl -fsSL https://raw.githubusercontent.com/captain-courageous/macMirror/main/quick-install.sh | bash
 ```
 
-*(If installing while this repository is private, ensure `gh` CLI is logged in or export `MACMIRROR_GH_TOKEN`, or clone locally and run `./quick-install.sh --local .`.)*
-
 Re-running the same command later detects your existing **`Mirror's Edge.app`** (`/Applications`, `~/Applications`, or `~/Downloads`), rebuilds/updates the app in-place, and keeps your saves, settings, shader cache, and game assets intact.
 
 ### Options & Game Sources

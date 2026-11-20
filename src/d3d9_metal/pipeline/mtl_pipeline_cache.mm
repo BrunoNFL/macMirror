@@ -77,7 +77,7 @@ MtlPipelineCache::MtlPipelineCache(id<MTLDevice> device) : device_(device) {
     std::string dir = (envCache && *envCache) ? envCache : "work/metal_shader_cache";
     mkdir("work", 0755);
     mkdir(dir.c_str(), 0755);
-    archivePath_ = dir + "/pipelines_v7.metallib";
+    archivePath_ = dir + "/pipelines_v8.metallib";
     if (const char *ae = getenv("ME_PC_MAX_ANISO")) {
         long v = std::strtol(ae, nullptr, 10);
         if (v >= 1 && v <= 16) maxAnisoCap_ = uint8_t(v);

@@ -814,7 +814,12 @@ struct IrDiskHeader {
 };
 
 static uint32_t expectedIrMagic() {
-    return useSafeMath() ? 0x4D495238u : 0x4D495237u;
+    return useSafeMath() ? 0x4D49523Au : 0x4D495239u;
+}
+
+static const char *expectedMslMetaTag(bool emuDref) {
+    return useSafeMath() ? (emuDref ? "// MTLMETA9SE " : "// MTLMETA9S ")
+                         : (emuDref ? "// MTLMETA9E "  : "// MTLMETA9 ");
 }
 
 static std::shared_ptr<MtlParsedShader> loadParsedShaderFromDisk(
@@ -938,8 +943,7 @@ MtlShaderCompiler::MtlShaderCompiler(id<MTLDevice> device)
         uint32_t preCount = 0;
         uint32_t irPreCount = 0;
         static const bool emuDref = ([] { const char *e = getenv("ME_PC_EMULATE_DREF"); return e && *e == '1'; })();
-        const char *metaTag = useSafeMath() ? (emuDref ? "// MTLMETA8SE " : "// MTLMETA8S ")
-                                            : (emuDref ? "// MTLMETA8E "  : "// MTLMETA8 ");
+        const char *metaTag = expectedMslMetaTag(emuDref);
         const char *irExt = emuDref ? ".ir8e" : ".ir8";
         const size_t irExtLen = strlen(irExt);
         std::vector<std::string> irFiles;
@@ -1139,6 +1143,9 @@ std::shared_ptr<MtlParsedShader> MtlShaderCompiler::compileFromBytecode(const ui
     }
 
     dxbc_spv::ir::CompileOptions compileOpts = {};
+    /* Desktop D3D9 ignores SM3 _pp partial precision; lowering eMinF16 to FP16 overflows
+     * dot(L, L) above 65504 (~255.94 cm) on normalizations, zeroing point lighting. */
+    compileOpts.min16Options.enableFloat16 = false;
     compileOpts.cseOptions.relocateDescriptorLoad = true;
     compileOpts.descriptorIndexing.optimizeDescriptorIndexing = true;
     dxbc_spv::ir::legalizeIr(builder, compileOpts);
@@ -1306,8 +1313,7 @@ bool MtlShaderCompiler::lowerAndCompileToMetal(
     }
 
     static const bool emuDref = ([] { const char *e = getenv("ME_PC_EMULATE_DREF"); return e && *e == '1'; })();
-    const char *metaTag = useSafeMath() ? (emuDref ? "// MTLMETA8SE " : "// MTLMETA8S ")
-                                        : (emuDref ? "// MTLMETA8E "  : "// MTLMETA8 ");
+    const char *metaTag = expectedMslMetaTag(emuDref);
     /* Fast path 2: check disk cache BEFORE deserializing IR */
     char cachePath[512];
     snprintf(cachePath, sizeof(cachePath), "%s/%s_%016llx.msl",

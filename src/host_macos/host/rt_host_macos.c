@@ -1003,6 +1003,16 @@ static void handle_event(const SDL_Event *e)
         }
         break;
     }
+    case SDL_EVENT_MOUSE_WHEEL: {
+        if (windows[0].win && e->wheel.y != 0.0f) {
+            float wy = e->wheel.direction == SDL_MOUSEWHEEL_FLIPPED ? -e->wheel.y : e->wheel.y;
+            int delta = (int)(wy * 120.0f);
+            if (delta == 0) delta = wy > 0 ? 120 : -120;
+            int gx = atomic_load(&last_gx), gy = atomic_load(&last_gy);
+            post_to(windows[0].owner, windows[0].win, 0x020A, ((uint32_t)(int16_t)delta) << 16, (uint32_t)(gx & 0xFFFF) | ((uint32_t)gy << 16));
+        }
+        break;
+    }
     case SDL_EVENT_WINDOW_FOCUS_GAINED:
         if (getenv("ME_PC_LOG_INPUT")) rt_log("SDL window focus gained");
         atomic_store(&app_in_front, 1);
